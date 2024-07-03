@@ -30,6 +30,9 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['action'])) {
         case 'eliminar':
             eliminarUsuario();
             break;
+        case 'buscar':
+            buscarUsuario();
+            break;
         default:
             echo 'Acción no válida';
             break;
@@ -48,7 +51,8 @@ function mostrarUsuarios() {
     if ($result) {
         // Construir la tabla HTML con los datos de los usuarios
         $table = '<table class="table table-striped">';
-        $table .= '<thead><tr><th>Cédula</th><th>Nombre</th><th>Apellido</th><th>Fecha de Nacimiento</th><th>Usuario</th></tr></thead>';
+        $table .= '<thead><tr><th>Cédula</th><th>Nombre</th><th>Apellido</th><th>Fecha de Nacimiento</th><th>Usuario</th>
+		</tr></thead>';
         $table .= '<tbody>';
         while ($row = mysqli_fetch_assoc($result)) {
             $table .= '<tr>';
@@ -148,6 +152,51 @@ function eliminarUsuario() {
         mysqli_stmt_close($stmt);
     } else {
         echo 'Falta la cédula del usuario a eliminar.';
+    }
+}
+
+function buscarUsuario() {
+    global $conexion;
+
+    // Verificar si los datos esperados están presentes
+    if (isset($_POST['cedula'])) {
+        $cedula = $_POST['cedula'];
+
+        // Preparar y ejecutar la llamada al procedimiento almacenado
+        $sql = "CALL sp_crud_usuarios('buscar', ?, '', '', '', '', '')";
+        $stmt = mysqli_prepare($conexion, $sql);
+        mysqli_stmt_bind_param($stmt, "s", $cedula);
+
+        if (mysqli_stmt_execute($stmt)) {
+            $result = mysqli_stmt_get_result($stmt);
+            $row = mysqli_fetch_assoc($result);
+
+            if ($row) {
+                // Mostrar el formulario para actualizar el usuario
+                echo '<form id="formActualizarUsuario">';
+                echo '<input type="hidden" name="cedula" value="' . htmlspecialchars($row['CEDULA']) . '">';
+                echo '<div class="mb-3"><label for="nombre">Nombre:</label>';
+                echo '<input type="text" id="nombre" name="nombre" class="form-control" value="' . htmlspecialchars($row['NOMBRE']) . '" required></div>';
+                echo '<div class="mb-3"><label for="apellido">Apellido:</label>';
+                echo '<input type="text" id="apellido" name="apellido" class="form-control" value="' . htmlspecialchars($row['APELLIDO']) . '" required></div>';
+                echo '<div class="mb-3"><label for="fecha_nacimiento">Fecha de Nacimiento:</label>';
+                echo '<input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control" value="' . htmlspecialchars($row['FECHA_NACIMIENTO']) . '" required></div>';
+                echo '<div class="mb-3"><label for="usuario">Usuario:</label>';
+                echo '<input type="text" id="usuario" name="usuario" class="form-control" value="' . htmlspecialchars($row['USUARIO']) . '" required></div>';
+                echo '<div class="mb-3"><label for="contrasena">Contraseña:</label>';
+                echo '<input type="password" id="contrasena" name="contrasena" class="form-control" value="' . htmlspecialchars($row['CONTRASENA']) . '" required></div>';
+                echo '<button type="submit" class="btn btn-primary">Actualizar</button>';
+                echo '</form>';
+            } else {
+                echo 'No se encontró ningún usuario con la cédula proporcionada.';
+            }
+        } else {
+            echo 'Error al buscar usuario: ' . mysqli_stmt_error($stmt);
+        }
+
+        mysqli_stmt_close($stmt);
+    } else {
+        echo 'Falta la cédula del usuario a buscar.';
     }
 }
 

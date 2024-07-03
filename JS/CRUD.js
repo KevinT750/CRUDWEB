@@ -21,6 +21,7 @@ if (action) {
     }
 }
 
+
 function CrearUsuarios() {
     crudContent.innerHTML = `
         <div class="card">
@@ -57,12 +58,10 @@ function CrearUsuarios() {
         </div>
     `;
 
-    // Capturar el evento submit del formulario
     document.getElementById('crearUsuarioForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevenir el envío por defecto del formulario
+        event.preventDefault(); 
         const formData = new FormData(this);
 
-        // Realizar la solicitud AJAX para crear un nuevo usuario
         $.ajax({
             url: 'http://localhost:8080/WEBDB/JS/CRUD.php?action=crear',
             type: 'POST',
@@ -119,6 +118,9 @@ function ActualizarUsuarios() {
                     </div>
                     <button type="submit" class="btn btn-warning w-100">Buscar</button>
                 </form>
+                <div id="formularioActualizar">
+                    <!-- Aquí se mostrará el formulario para actualizar -->
+                </div>
             </div>
         </div>
     `;
@@ -128,24 +130,50 @@ function ActualizarUsuarios() {
         event.preventDefault(); // Prevenir el envío por defecto del formulario
         const formData = new FormData(this);
 
-        // Realizar la solicitud AJAX para buscar y actualizar el usuario
+        // Realizar la solicitud AJAX para buscar el usuario
         $.ajax({
-            url: 'http://localhost:8080/WEBDB/JS/CRUD.php?action=actualizar',
+            url: 'http://localhost:8080/WEBDB/JS/CRUD.php?action=buscar',
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
             success: function(response) {
-                alert(response); // Mostrar mensaje de éxito
-                verUsuarios(); // Mostrar nuevamente la lista de usuarios actualizada
+                $('#formularioActualizar').html(response); // Mostrar el formulario de actualización
+                bindActualizarForm(); // Vincular el formulario de actualización con su funcionalidad
             },
             error: function(xhr, status, error) {
-                console.error('Error al actualizar usuario:', error);
-                alert('Error al actualizar usuario. Consulta la consola para más detalles.');
+                console.error('Error al buscar usuario:', error);
+                alert('Error al buscar usuario. Consulta la consola para más detalles.');
             }
         });
     });
+
+    // Función para vincular el formulario de actualización con su funcionalidad
+    function bindActualizarForm() {
+        $('#formularioActualizar').on('submit', '#formActualizarUsuario', function(event) {
+            event.preventDefault(); // Prevenir el envío por defecto del formulario
+            const formData = new FormData(this);
+
+            // Realizar la solicitud AJAX para actualizar el usuario
+            $.ajax({
+                url: 'http://localhost:8080/WEBDB/JS/CRUD.php?action=actualizar',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    alert(response); // Mostrar mensaje de éxito
+                    verUsuarios(); // Mostrar nuevamente la lista de usuarios actualizada
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error al actualizar usuario:', error);
+                    alert('Error al actualizar usuario. Consulta la consola para más detalles.');
+                }
+            });
+        });
+    }
 }
+
 
 function eliminarUsuarios() {
     crudContent.innerHTML = `
@@ -168,7 +196,7 @@ function eliminarUsuarios() {
         event.preventDefault(); // Prevenir el envío por defecto del formulario
         const formData = new FormData(this);
 
-        // Realizar la solicitud AJAX para eliminar el usuario
+        
         $.ajax({
             url: 'http://localhost:8080/WEBDB/JS/CRUD.php?action=eliminar',
             type: 'POST',
@@ -176,8 +204,8 @@ function eliminarUsuarios() {
             processData: false,
             contentType: false,
             success: function(response) {
-                alert(response); // Mostrar mensaje de éxito
-                verUsuarios(); // Mostrar nuevamente la lista de usuarios actualizada
+                alert(response); 
+                verUsuarios(); 
             },
             error: function(xhr, status, error) {
                 console.error('Error al eliminar usuario:', error);
